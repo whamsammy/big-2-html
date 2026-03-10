@@ -643,7 +643,9 @@ function toggleCard(idx) {
   if (!isMyTurn()) return;
   if (selected.has(idx)) selected.delete(idx);
   else selected.add(idx);
-  renderHand();
+  // update just the card's class, no full re-render
+  const cards = document.querySelectorAll('#handWrap .card');
+  if (cards[idx]) cards[idx].classList.toggle('selected', selected.has(idx));
   updateActionBar();
 }
 
