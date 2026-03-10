@@ -12,9 +12,9 @@
     --table:   #ddd5c8;
     --table-l: #e8e0d4;
     --panel:   #ede7dd;
-    --gold:    #b8860b;
-    --gold-l:  #d4a017;
-    --gold-d:  #8a6408;
+    --gold:    #3a7d44;
+    --gold-l:  #4e9e5a;
+    --gold-d:  #2a5e32;
     --ink:     #2c2416;
     --ink-l:   #4a3e2e;
     --mid:     #8a7d6a;
@@ -33,7 +33,7 @@
     color: var(--ink);
     min-height: 100vh;
     overflow-x: hidden;
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 L13.5 10.5 L22 12 L13.5 13.5 L12 22 L10.5 13.5 L2 12 L10.5 10.5 Z' fill='%23b8860b' opacity='0.9'/%3E%3C/svg%3E") 12 12, auto;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 L13.5 10.5 L22 12 L13.5 13.5 L12 22 L10.5 13.5 L2 12 L10.5 10.5 Z' fill='%233a7d44' opacity='0.9'/%3E%3C/svg%3E") 12 12, auto;
   }
 
   body::before {
@@ -331,28 +331,27 @@
 
   /* ── Activity log ── */
   #activityLog {
-    position:fixed; right:16px; top:60px;
-    width:200px; z-index:50;
-    display:none; flex-direction:column; gap:6px;
+    position:absolute; left:50%; top:50%;
+    transform:translate(12px, -50%);
+    margin-left: calc(var(--card-w) * 3);
+    width:148px; z-index:50;
     pointer-events:none;
   }
-  #activityLog.visible { display:flex; }
   .log-entry {
-    background:rgba(255,252,246,0.88);
-    border:1px solid rgba(184,134,11,0.15);
+    background:rgba(255,252,246,0.92);
+    border:1px solid rgba(58,125,68,0.2);
     border-radius:10px; padding:8px 12px;
     font-size:10px; color:var(--ink-l); line-height:1.5;
     box-shadow:0 2px 8px rgba(44,36,22,0.08);
     backdrop-filter:blur(6px);
-    animation:slideInRight 0.3s ease both;
+    animation:fadeIn 0.25s ease both;
   }
   .log-entry .log-name { color:var(--gold); font-weight:500; }
   .log-entry .log-action { color:var(--mid); }
-  @keyframes slideInRight { from{opacity:0;transform:translateX(12px)} to{opacity:1;transform:translateX(0)} }
 
   /* ── Emoji picker ── */
   .emoji-picker-label { font-size:9px; letter-spacing:0.2em; color:var(--gold); text-transform:uppercase; margin-bottom:8px; display:block; }
-  .emoji-grid { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+  .emoji-grid { display:grid; grid-template-columns:repeat(5,40px); gap:8px; margin-bottom:20px; }
   .emoji-opt {
     width:40px; height:40px; border-radius:10px; font-size:20px;
     background:rgba(240,235,226,0.8); border:1.5px solid rgba(184,134,11,0.15);
@@ -442,7 +441,7 @@
   </div>
 
   <!-- Activity log -->
-  <div id="activityLog"></div>
+
 
   <div class="table-wrap">
 
@@ -460,7 +459,7 @@
     </div>
 
     <!-- Centre -->
-    <div class="center-area">
+    <div class="center-area" style="position:relative;">
       <div id="pileEmpty" class="lead-badge">— new round — play anything —</div>
       <div id="pileArea" style="display:none; flex-direction:column; align-items:center; gap:4px;">
         <div class="pile-label">last play</div>
@@ -468,6 +467,7 @@
         <div class="pile-type" id="pileType"></div>
         <div class="pile-by" id="pileBy"></div>
       </div>
+      <div id="activityLog"></div>
     </div>
 
     <!-- Your hand -->
@@ -517,7 +517,7 @@ const WS_URL = window.location.hostname === 'localhost'
   : 'wss://big-2-g1r4.onrender.com';
 
 // ── Emoji picker ──────────────────────────────────────────────────────────────
-const EMOJI_OPTIONS = ['🌸','🌙','🔥','🌊','⚡','🌿','🦋','🎴'];
+const EMOJI_OPTIONS = ['🌸','🌙','🔥','🌊','⚡','🌿','🦋','🎴','🍀','🐉'];
 let chosenEmoji = EMOJI_OPTIONS[0];
 
 function initEmojiPicker() {
@@ -536,21 +536,10 @@ function pickEmoji(el, emoji) {
 initEmojiPicker();
 
 // ── Activity log ──────────────────────────────────────────────────────────────
-const MAX_LOG = 6;
-const logEntries = [];
 
 function addLog(html) {
   const log = document.getElementById('activityLog');
-  log.classList.add('visible');
-  const entry = document.createElement('div');
-  entry.className = 'log-entry';
-  entry.innerHTML = html;
-  logEntries.push(entry);
-  if (logEntries.length > MAX_LOG) {
-    const old = logEntries.shift();
-    old.remove();
-  }
-  log.appendChild(entry);
+  log.innerHTML = `<div class="log-entry">${html}</div>`;
 }
 
 function describePlay(cards, type) {
@@ -849,9 +838,7 @@ function handleMessage(msg) {
 
     case 'started':
       selected.clear();
-      logEntries.forEach(e => e.remove());
-      logEntries.length = 0;
-      document.getElementById('activityLog').classList.remove('visible');
+      document.getElementById('activityLog').innerHTML = '';
       document.getElementById('winOverlay').classList.remove('show');
       showScreen('gameScreen');
       fullRender();
