@@ -547,7 +547,7 @@
 </div>
 
 <!-- ══ WIN ════════════════════════════════════════════════ -->
-<canvas id="confettiCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:99;display:none"></canvas>
+<canvas id="confettiCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:200;display:none"></canvas>
 <div id="winOverlay">
   <div class="win-symbol" id="winSymbol">♥</div>
   <p class="win-label">game over</p>
@@ -959,10 +959,13 @@ function handleMessage(msg) {
         document.getElementById('winTitle').innerHTML = `<em>${msg.winnerName}</em> wins`;
         document.getElementById('winSub').textContent = iWon ? 'you cleared your hand first 🎉' : 'better luck next round';
         document.getElementById('rematchInfo').textContent = '';
+        document.getElementById('yourTurnPill').classList.remove('show');
+        document.getElementById('handWrap').classList.remove('my-turn');
+        document.querySelector('.action-bar').classList.remove('my-turn');
         updateScoreBoard(iWon);
+        if (iWon) setTimeout(() => launchConfetti(), 1400);
         setTimeout(() => {
           document.getElementById('winOverlay').classList.add('show');
-          if (iWon) launchConfetti();
         }, 2200);
       } break;
 
