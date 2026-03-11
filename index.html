@@ -389,7 +389,7 @@
     <button class="btn-primary" id="joinBtn" onclick="joinGame()">enter the room →</button>
     <p class="error-msg" id="lobbyError"></p>
   </div>
-  <p class="lobby-sleepy">🌙 first visit of the day? the server might be having a little nap —<br>give it a moment to wake up ☁️</p>
+  <p class="lobby-sleepy">first visit of the day? the server might be having a lil nap -<br>give it a moment to wake up ☁️</p>
 </div>
 
 <!-- ══ WAITING ══════════════════════════════════════════ -->
@@ -497,7 +497,7 @@ const WS_URL = window.location.hostname === 'localhost'
   : 'wss://big-2-g1r4.onrender.com';
 
 // ── Emoji picker ───────────────────────────────────────────────────
-const EMOJI_OPTIONS = ['🌸','🌙','🔥','🌊','⚡','🌿','🪷'];
+const EMOJI_OPTIONS = ['🌸','🌙','🔥','🌊','⚡','🌿','🐀'];
 let chosenEmoji = EMOJI_OPTIONS[0];
 
 function initEmojiPicker() {
@@ -820,10 +820,12 @@ function handleMessage(msg) {
         document.getElementById('winSymbol').textContent = iWon ? '♥' : '♦';
         document.getElementById('winTitle').innerHTML = `<em>${msg.winnerName}</em> wins`;
         document.getElementById('winSub').textContent = iWon ? 'you cleared your hand first 🎉' : 'better luck next round';
-        document.getElementById('winOverlay').classList.add('show');
         document.getElementById('rematchInfo').textContent = '';
         updateScoreBoard(iWon);
-        if (iWon) launchConfetti();
+        setTimeout(() => {
+          document.getElementById('winOverlay').classList.add('show');
+          if (iWon) launchConfetti();
+        }, 2200);
       } break;
 
     case 'rematchVote':
