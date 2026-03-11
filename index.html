@@ -60,7 +60,7 @@
 
   .lobby-eyebrow { font-size:10px; letter-spacing:0.35em; color:var(--gold); text-transform:uppercase; margin-bottom:12px; }
   h1.lobby-title { font-family:'Playfair Display',serif; font-size:clamp(52px,10vw,88px); font-weight:700; line-height:0.9; color:var(--ink); text-align:center; margin-bottom:16px; }
-  h1.lobby-title em { font-style:italic; color:var(--gold); }
+  h1.lobby-title em { font-style:italic; color:var(--gold); font-size:1.35em; line-height:0.7; }
   .lobby-chinese { font-size:13px; letter-spacing:0.5em; color:var(--mid); margin-bottom:40px; text-align:center; display:block; }
 
   .lobby-card {
@@ -254,26 +254,47 @@
 
   /* ── CARDS ── */
   .card {
-    width:var(--card-w); height:var(--card-h); border-radius:8px;
-    background:#fff; border:1px solid rgba(0,0,0,0.1);
-    box-shadow:0 2px 8px rgba(44,36,22,0.15);
+    width:var(--card-w); height:var(--card-h); border-radius:10px;
+    background: linear-gradient(160deg, #fffef9 0%, #faf6ee 100%);
+    border:1px solid rgba(0,0,0,0.08);
+    box-shadow:0 2px 6px rgba(44,36,22,0.12), inset 0 1px 0 rgba(255,255,255,0.9);
     display:flex; flex-direction:column; padding:6px 7px;
-    position:relative; flex-shrink:0;
+    position:relative; flex-shrink:0; overflow:hidden;
     transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
     cursor:pointer; user-select:none;
   }
-  .card:hover { transform:translateY(-6px); box-shadow:0 8px 20px rgba(44,36,22,0.2); }
-  .card.selected { transform:translateY(-14px); box-shadow:0 10px 24px rgba(184,134,11,0.25); border-color:var(--gold); border-width:2px; }
-  .card.red .card-rank,.card.red .card-suit,.card.red .card-cs { color:var(--red); }
-  .card.black .card-rank,.card.black .card-suit,.card.black .card-cs { color:#1a1a1a; }
+  /* inner border line */
+  .card::before {
+    content:''; position:absolute; inset:4px;
+    border-radius:6px; border:1px solid rgba(0,0,0,0.05);
+    pointer-events:none; z-index:1;
+  }
+  /* subtle corner pip texture */
+  .card::after {
+    content:''; position:absolute; inset:0; border-radius:10px;
+    background: radial-gradient(ellipse at 10% 10%, rgba(255,255,255,0.6) 0%, transparent 60%);
+    pointer-events:none;
+  }
+  .card:hover { transform:translateY(-8px); box-shadow:0 12px 28px rgba(44,36,22,0.18), inset 0 1px 0 rgba(255,255,255,0.9); }
+  .card.selected {
+    transform:translateY(-16px);
+    box-shadow:0 14px 32px rgba(58,125,68,0.22), 0 0 0 2px var(--gold), inset 0 1px 0 rgba(255,255,255,0.9);
+    border-color:var(--gold);
+  }
+  .card.red .card-rank,.card.red .card-suit,.card.red .card-cs { color:#c0392b; }
+  .card.black .card-rank,.card.black .card-suit,.card.black .card-cs { color:#1a1209; }
 
-  .card-rank { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; line-height:1; }
-  .card-suit { font-size:18px; line-height:1; }
-  .card-cs { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:48px; opacity:0.18; pointer-events:none; }
-  .card-bot { position:absolute; bottom:5px; right:6px; transform:rotate(180deg); display:flex; flex-direction:column; align-items:flex-start; }
+  .card-rank { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; line-height:1; position:relative; z-index:2; }
+  .card-suit { font-size:16px; line-height:1.1; position:relative; z-index:2; }
+  .card-cs {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    font-size:44px; opacity:0.1; pointer-events:none; z-index:0;
+    filter:blur(0.5px);
+  }
+  .card-bot { position:absolute; bottom:5px; right:6px; transform:rotate(180deg); display:flex; flex-direction:column; align-items:flex-start; z-index:2; }
 
-  /* pile cards */
-  .pile-card { margin-left:-16px; }
+  /* pile cards — slight overlap for natural look */
+  .pile-card { margin-left:-12px; }
   .pile-card:first-child { margin-left:0; }
 
   /* ── Action bar ── */
@@ -299,10 +320,10 @@
     background:linear-gradient(135deg,var(--gold-l),var(--gold-d));
     border:none; border-radius:8px; color:#fff; font-size:11px; font-weight:500;
     letter-spacing:0.15em; text-transform:uppercase; transition:all 0.2s;
-    box-shadow:0 4px 12px rgba(184,134,11,0.2); opacity:0.35;
+    box-shadow:0 4px 12px rgba(58,125,68,0.2); opacity:0.35;
   }
   .btn-play.ready { opacity:1; }
-  .btn-play.ready:hover { transform:translateY(-1px); box-shadow:0 8px 20px rgba(184,134,11,0.35); }
+  .btn-play.ready:hover { transform:translateY(-1px); box-shadow:0 8px 20px rgba(58,125,68,0.35); }
   .btn-play:disabled { cursor:default; }
 
   /* ── WIN OVERLAY ── */
@@ -842,7 +863,6 @@ function handleMessage(msg) {
       document.getElementById('winOverlay').classList.remove('show');
       showScreen('gameScreen');
       fullRender();
-      toast(msg.firstTurn === myIdx ? '✦ you go first — play the 3♦' : `${gameState?.oppName || 'opponent'} goes first`);
       break;
 
     case 'played':
@@ -868,7 +888,6 @@ function handleMessage(msg) {
       {
         const leaderName = msg.leader === myIdx ? 'you' : (gameState?.oppName || 'opponent');
         addLog(`<span class="log-action">— ${leaderName} lead${msg.leader === myIdx ? '' : 's'} a new round —</span>`);
-        if (msg.leader === myIdx) toast('✦ you lead the new round');
       }
       break;
 
