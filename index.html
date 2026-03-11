@@ -322,7 +322,68 @@
   .btn-play.ready:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(74,158,92,0.5); }
   .btn-play:disabled { cursor:default; }
 
-  /* overlays — dark */
+  /* ── Chat ── */
+  .chat-toggle {
+    position:relative; background:transparent; border:1px solid rgba(74,158,92,0.25);
+    border-radius:8px; color:var(--dim-t); font-size:14px;
+    width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+    transition:all 0.2s; cursor:pointer;
+  }
+  .chat-toggle:hover { border-color:var(--green); color:var(--green-l); }
+  .chat-toggle.active { border-color:var(--green); color:var(--green-l); background:rgba(74,158,92,0.12); }
+  .chat-badge {
+    position:absolute; top:-4px; right:-4px; width:8px; height:8px;
+    background:var(--red); border-radius:50%; border:1px solid var(--felt);
+  }
+
+  .chat-drawer {
+    position:absolute; top:0; left:0; bottom:0; width:260px;
+    background:rgba(14,22,15,0.97); border-right:1px solid rgba(74,158,92,0.2);
+    backdrop-filter:blur(16px); z-index:50;
+    display:flex; flex-direction:column;
+    transform:translateX(-100%); transition:transform 0.28s ease;
+  }
+  .chat-drawer.open { transform:translateX(0); }
+
+  .chat-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px; border-bottom:1px solid rgba(74,158,92,0.15); flex-shrink:0;
+  }
+  .chat-title { font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:var(--green-l); }
+  .chat-close { background:none; border:none; color:var(--dim-t); font-size:14px; cursor:pointer; padding:2px 4px; }
+  .chat-close:hover { color:var(--cream-t); }
+
+  .chat-messages {
+    flex:1; overflow-y:auto; padding:12px 14px;
+    display:flex; flex-direction:column; gap:10px;
+    scrollbar-width:thin; scrollbar-color:rgba(74,158,92,0.2) transparent;
+  }
+  .chat-msg { display:flex; flex-direction:column; gap:2px; }
+  .chat-msg-meta { display:flex; align-items:baseline; gap:6px; }
+  .chat-msg-name { font-size:9px; color:var(--green-l); letter-spacing:0.1em; text-transform:uppercase; }
+  .chat-msg-name.me { color:rgba(240,232,216,0.5); }
+  .chat-msg-time { font-size:8px; color:var(--dim-t); }
+  .chat-msg-text { font-size:12px; color:var(--cream-t); line-height:1.45; word-break:break-word; }
+
+  .chat-input-row {
+    display:flex; gap:8px; padding:10px 12px;
+    border-top:1px solid rgba(74,158,92,0.15); flex-shrink:0;
+  }
+  .chat-input {
+    flex:1; background:rgba(74,158,92,0.08); border:1px solid rgba(74,158,92,0.2);
+    border-radius:8px; padding:8px 12px; color:var(--cream-t);
+    font-family:'DM Mono',monospace; font-size:12px; outline:none;
+    transition:border-color 0.2s;
+  }
+  .chat-input:focus { border-color:var(--green); }
+  .chat-input::placeholder { color:var(--dim-t); }
+  .chat-send {
+    width:32px; height:32px; background:linear-gradient(135deg,var(--green-l),var(--green-d));
+    border:none; border-radius:8px; color:#fff; font-size:16px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:all 0.2s; flex-shrink:0;
+  }
+  .chat-send:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(74,158,92,0.4); }
   #winOverlay {
     display:none; position:fixed; inset:0;
     background:rgba(14,22,15,0.96); backdrop-filter:blur(16px);
@@ -389,7 +450,7 @@
     <button class="btn-primary" id="joinBtn" onclick="joinGame()">enter the room →</button>
     <p class="error-msg" id="lobbyError"></p>
   </div>
-  <p class="lobby-sleepy">first visit of the day? the server might be having a lil nap -<br>give it a moment to wake up ☁️</p>
+  <p class="lobby-sleepy">🌙 first visit of the day? the server might be having a lil nap -<br>give it a moment to wake up ☁️</p>
 </div>
 
 <!-- ══ WAITING ══════════════════════════════════════════ -->
@@ -422,7 +483,13 @@
       <span class="hud-score-div">·</span>
       <span id="hudScoreOpp">0</span>
     </div>
-    <div class="turn-indicator theirs" id="turnBadge">waiting</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="chat-toggle" id="chatToggle" onclick="toggleChat()" title="chat">
+        ✉
+        <span class="chat-badge" id="chatBadge" style="display:none"></span>
+      </button>
+      <div class="turn-indicator theirs" id="turnBadge">waiting</div>
+    </div>
   </div>
   <div class="table-wrap">
     <div class="opp-zone">
@@ -455,6 +522,19 @@
     <div class="action-hint" id="actionHint">waiting for opponent...</div>
     <button class="btn-pass" id="passBtn" onclick="doPass()" disabled>pass</button>
     <button class="btn-play" id="playBtn" onclick="doPlay()" disabled>play ✦</button>
+  </div>
+
+  <!-- chat drawer -->
+  <div class="chat-drawer" id="chatDrawer">
+    <div class="chat-header">
+      <span class="chat-title">chat</span>
+      <button class="chat-close" onclick="toggleChat()">✕</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chatInput" type="text" placeholder="say something..." maxlength="120" autocomplete="off">
+      <button class="chat-send" onclick="sendChat()">↑</button>
+    </div>
   </div>
 </div>
 
@@ -532,7 +612,59 @@ const PT_LABELS={single:'single',pair:'pair',triple:'triple',straight:'straight'
 
 function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-// ── Confetti ───────────────────────────────────────────────────────
+// ── Chat ──────────────────────────────────────────────────────────
+let chatOpen = false;
+let unreadCount = 0;
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chatDrawer').classList.toggle('open', chatOpen);
+  document.getElementById('chatToggle').classList.toggle('active', chatOpen);
+  if (chatOpen) {
+    unreadCount = 0;
+    document.getElementById('chatBadge').style.display = 'none';
+    setTimeout(() => document.getElementById('chatInput').focus(), 300);
+    scrollChatToBottom();
+  }
+}
+
+function scrollChatToBottom() {
+  const el = document.getElementById('chatMessages');
+  el.scrollTop = el.scrollHeight;
+}
+
+function formatTime() {
+  const now = new Date();
+  return now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+}
+
+function appendChatMsg(name, text, isMe) {
+  const el = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg';
+  div.innerHTML = `
+    <div class="chat-msg-meta">
+      <span class="chat-msg-name${isMe?' me':''}">${name}</span>
+      <span class="chat-msg-time">${formatTime()}</span>
+    </div>
+    <div class="chat-msg-text">${text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+  `;
+  el.appendChild(div);
+  scrollChatToBottom();
+}
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || !ws) return;
+  ws.send(JSON.stringify({ type: 'chat', text }));
+  input.value = '';
+}
+
+// send on enter key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && chatOpen) sendChat();
+});
 function launchConfetti() {
   const canvas = document.getElementById('confettiCanvas');
   const ctx = canvas.getContext('2d');
@@ -834,6 +966,16 @@ function handleMessage(msg) {
     case 'disconnected':
       document.getElementById('disconnectMsg').textContent=`${gameState?.oppName||'your opponent'} has left the room`;
       document.getElementById('disconnectOverlay').classList.add('show'); break;
+
+    case 'chat':
+      { const isMe = msg.from === myIdx;
+        const name = isMe ? (myName||'you') : (gameState?.oppName||'opponent');
+        appendChatMsg(name, msg.text, isMe);
+        if (!chatOpen && !isMe) {
+          unreadCount++;
+          document.getElementById('chatBadge').style.display = 'block';
+        }
+      } break;
 
     case 'error': toast(`⚠ ${msg.msg}`); break;
   }
