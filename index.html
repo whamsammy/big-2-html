@@ -254,7 +254,7 @@
     background:linear-gradient(160deg,#fffef9 0%,#f8f4eb 100%);
     border:1px solid rgba(0,0,0,0.12);
     box-shadow:0 4px 18px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,1);
-    display:flex; flex-direction:column; padding:5px 6px; gap:0;
+    display:flex; flex-direction:column; padding:5px 6px;
     position:relative; flex-shrink:0; overflow:hidden;
     transition:transform 0.15s ease,box-shadow 0.15s ease,border-color 0.15s ease;
     cursor:pointer; user-select:none;
@@ -281,28 +281,16 @@
     box-shadow:0 24px 48px rgba(0,0,0,0.6),0 0 0 2.5px var(--green-l),0 0 20px rgba(98,184,116,0.35),inset 0 1px 0 rgba(255,255,255,1);
     border-color:var(--green-l);
   }
-  .card.red .card-rank,.card.red .card-suit,.card.red .pip,.card.red .pip-face-sym,.card.red .pip-face-rank,.card.red .pip-ace span { color:#c0272d; }
-  .card.black .card-rank,.card.black .card-suit,.card.black .pip,.card.black .pip-face-sym,.card.black .pip-face-rank,.card.black .pip-ace span { color:#0a0a0a; }
-
-  /* corner indices */
-  .card-corner { display:flex; flex-direction:column; align-items:center; line-height:1; flex-shrink:0; }
-  .card-corner-tl { align-self:flex-start; }
-  .card-corner-br { align-self:flex-end; transform:rotate(180deg); margin-top:auto; }
+  .card.red .card-rank,.card.red .card-suit,.card.red .card-cs { color:#c0272d; }
+  .card.black .card-rank,.card.black .card-suit,.card.black .card-cs { color:#0a0a0a; }
   .card-rank { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; line-height:1; position:relative; z-index:6; letter-spacing:-0.02em; }
   .card-suit { font-size:13px; line-height:1; position:relative; z-index:6; margin-top:1px; }
-
-  /* pip area — fills the centre of the card */
-  .pip-area { position:relative; width:100%; flex:1; z-index:3; }
-  .pip { font-size:10px; line-height:1; display:inline-block; }
-
-  /* ace — single giant pip */
-  .pip-ace { display:flex; align-items:center; justify-content:center; }
-  .pip-ace span { font-size:32px; line-height:1; }
-
-  /* face cards — decorative */
-  .pip-face { display:flex; align-items:center; justify-content:center; position:relative; }
-  .pip-face-sym { font-size:28px; opacity:0.15; }
-  .pip-face-rank { position:absolute; font-family:'Playfair Display',serif; font-size:22px; font-weight:700; font-style:italic; opacity:0.9; }
+  .card-cs {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    font-size:52px; opacity:0.07; pointer-events:none; z-index:1;
+    filter:blur(0.3px);
+  }
+  .card-bot { position:absolute; bottom:4px; right:5px; transform:rotate(180deg); display:flex; flex-direction:column; align-items:flex-start; z-index:6; }
 
   .pile-card { margin-left:-14px; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4)); }
   .pile-card:first-child { margin-left:0; }
@@ -514,55 +502,6 @@ function setError(msg) { document.getElementById('lobbyError').textContent=msg; 
 function copyCode() { navigator.clipboard?.writeText(roomCode).then(()=>toast('room code copied!')); }
 function isMyTurn() { return gameState&&gameState.currentTurn===myIdx; }
 
-// ── Pip layout ─────────────────────────────────────────────────────
-// Each array is [col, row] in a 3-col × 4-row grid (0-2, 0-3)
-// col: 0=left, 1=centre, 2=right  |  row: 0=top ... 3=bottom
-// Pips in bottom half are auto-rotated 180°
-const PIP_POSITIONS = {
-  'A':  [[1,1.5]],
-  '2':  [[1,0],[1,3]],
-  '3':  [[1,0],[1,1.5],[1,3]],
-  '4':  [[0,0],[2,0],[0,3],[2,3]],
-  '5':  [[0,0],[2,0],[1,1.5],[0,3],[2,3]],
-  '6':  [[0,0],[2,0],[0,1.5],[2,1.5],[0,3],[2,3]],
-  '7':  [[0,0],[2,0],[1,0.8],[0,1.5],[2,1.5],[0,3],[2,3]],
-  '8':  [[0,0],[2,0],[1,0.8],[0,1.5],[2,1.5],[1,2.2],[0,3],[2,3]],
-  '9':  [[0,0],[2,0],[0,1],[2,1],[1,1.5],[0,2],[2,2],[0,3],[2,3]],
-  '10': [[0,0],[2,0],[1,0.6],[0,1],[2,1],[0,2],[2,2],[1,2.4],[0,3],[2,3]],
-};
-const FACE_RANKS = new Set(['J','Q','K']);
-
-function pipAreaHTML(suit, rank) {
-  const s = suit;
-  if (FACE_RANKS.has(rank)) {
-    // face cards: big centred suit symbol with rank letter overlay
-    return `<div class="pip-area pip-face">
-      <div class="pip-face-sym">${s}</div>
-      <div class="pip-face-rank">${rank}</div>
-    </div>`;
-  }
-  if (rank === 'A') {
-    return `<div class="pip-area pip-ace"><span>${s}</span></div>`;
-  }
-  if (rank === '2') {
-    return `<div class="pip-area" style="display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:2px 0">
-      <span class="pip">${s}</span>
-      <span class="pip" style="transform:rotate(180deg)">${s}</span>
-    </div>`;
-  }
-  const positions = PIP_POSITIONS[rank];
-  if (!positions) return `<div class="pip-area pip-ace"><span>${s}</span></div>`;
-  // grid: 3 cols × 4 rows, pip area ~60×70px
-  const COL_X = [15, 30, 45]; // % left positions for col 0,1,2
-  const ROW_Y = (row) => (row / 3) * 100; // row 0=0%, row 3=100%
-  const midRow = 1.5;
-  const pips = positions.map(([col, row]) => {
-    const flip = row > midRow;
-    return `<span class="pip" style="position:absolute;left:${COL_X[col]}%;top:${ROW_Y(row)}%;transform:translate(-50%,-50%)${flip?' rotate(180deg)':''}">${s}</span>`;
-  }).join('');
-  return `<div class="pip-area" style="position:relative;width:100%;flex:1">${pips}</div>`;
-}
-
 // ── Card HTML ──────────────────────────────────────────────────────
 function cardHTML(card, idx, inHand=false) {
   const col   = RED_SUITS.has(card.suit) ? 'red' : 'black';
@@ -571,12 +510,10 @@ function cardHTML(card, idx, inHand=false) {
   const anim  = inHand ? ' deal-anim' : '';
   const delay = inHand ? `animation-delay:${idx*0.04}s` : '';
   return `<div class="card ${col}${sel}${anim}" ${click} style="${delay}">
-    <div class="card-corner card-corner-tl">
-      <div class="card-rank">${card.rank}</div>
-      <div class="card-suit">${card.suit}</div>
-    </div>
-    ${pipAreaHTML(card.suit, card.rank)}
-    <div class="card-corner card-corner-br">
+    <div class="card-rank">${card.rank}</div>
+    <div class="card-suit">${card.suit}</div>
+    <div class="card-cs">${card.suit}</div>
+    <div class="card-bot">
       <div class="card-rank">${card.rank}</div>
       <div class="card-suit">${card.suit}</div>
     </div>
