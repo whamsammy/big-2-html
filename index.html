@@ -469,7 +469,7 @@
     <button class="btn-primary" id="joinBtn" onclick="joinGame()">enter the room →</button>
     <p class="error-msg" id="lobbyError"></p>
   </div>
-  <p class="lobby-sleepy">🌙 first visit of the day? the server might be having a little nap —<br>give it a moment to wake up ☁️</p>
+  <p class="lobby-sleepy">🌙 first visit of the day? the server might be having a lil nap -<br>give it a moment to wake up ☁️</p>
 </div>
 
 <!-- ══ WAITING ══════════════════════════════════════════ -->
@@ -520,7 +520,7 @@
       <div class="opp-fan" id="oppFan"></div>
     </div>
     <div class="center-area">
-      <div id="pileEmpty" class="lead-badge">— your lead —</div>
+      <div id="pileEmpty" class="lead-badge"></div>
       <div id="pileArea" style="display:none;flex-direction:column;align-items:center;gap:4px;">
         <div class="pile-cards" id="pileCards"></div>
         <div class="pile-type" id="pileType"></div>
@@ -854,13 +854,14 @@ function renderOpp() {
 }
 function renderPile() {
   if (!gameState) return;
-  const pile=gameState.currentPlay;
-  if (!pile||pile.length===0) {
-    document.getElementById('pileEmpty').style.display='flex';
-    document.getElementById('pileArea').style.display='none';
+  const pile = gameState.currentPlay;
+  if (!pile || pile.length === 0) {
+    document.getElementById('pileEmpty').textContent = isMyTurn() ? '— your lead —' : `— ${gameState.oppName||'their'} lead —`;
+    document.getElementById('pileEmpty').style.display = 'flex';
+    document.getElementById('pileArea').style.display  = 'none';
   } else {
-    document.getElementById('pileEmpty').style.display='none';
-    document.getElementById('pileArea').style.display='flex';
+    document.getElementById('pileEmpty').style.display = 'none';
+    document.getElementById('pileArea').style.display  = 'flex';
     document.getElementById('pileCards').innerHTML=pile.map(c=>`<div class="pile-card">${cardHTML(c)}</div>`).join('');
     document.getElementById('pileType').textContent=PT_LABELS[gameState.lastPlayType||'']||'';
   }
