@@ -190,23 +190,22 @@
   .face-down {
     width:40px; height:58px; border-radius:7px;
     background:
-      linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%, rgba(0,0,0,0.1) 100%),
-      #1e3d28;
-    border:1px solid rgba(98,184,116,0.35);
-    position:absolute; box-shadow:0 3px 14px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.12);
+      linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%, rgba(0,0,0,0.15) 100%),
+      #6b1515;
+    border:1px solid rgba(220,80,80,0.4);
+    position:absolute; box-shadow:0 3px 14px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.1);
     overflow:hidden;
   }
-  /* decorative card back pattern */
   .face-down::before {
     content:''; position:absolute; inset:3px;
-    border:1px solid rgba(98,184,116,0.25); border-radius:4px;
+    border:1px solid rgba(220,80,80,0.25); border-radius:4px;
     background:
-      repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(98,184,116,0.06) 3px, rgba(98,184,116,0.06) 4px),
-      repeating-linear-gradient(-45deg, transparent, transparent 3px, rgba(98,184,116,0.06) 3px, rgba(98,184,116,0.06) 4px);
+      repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(220,80,80,0.08) 3px, rgba(220,80,80,0.08) 4px),
+      repeating-linear-gradient(-45deg, transparent, transparent 3px, rgba(220,80,80,0.08) 3px, rgba(220,80,80,0.08) 4px);
   }
   .face-down::after {
     content:'✦'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-    font-size:14px; color:rgba(98,184,116,0.35); line-height:1;
+    font-size:14px; color:rgba(220,80,80,0.5); line-height:1;
   }
 
   /* centre */
@@ -450,7 +449,7 @@
     <button class="btn-primary" id="joinBtn" onclick="joinGame()">enter the room →</button>
     <p class="error-msg" id="lobbyError"></p>
   </div>
-  <p class="lobby-sleepy">🌙 first visit of the day? the server might be having a lil nap -<br>give it a moment to wake up ☁️</p>
+  <p class="lobby-sleepy">🌙 first visit of the day? the server might be having a little nap —<br>give it a moment to wake up ☁️</p>
 </div>
 
 <!-- ══ WAITING ══════════════════════════════════════════ -->
