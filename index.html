@@ -652,17 +652,45 @@ function faceDownHTML(count) {
 function toggleCard(idx) {
   if (!isMyTurn()) return;
   if (selected.has(idx)) selected.delete(idx); else selected.add(idx);
-  const cards=document.querySelectorAll('#handWrap .card');
-  if (cards[idx]) cards[idx].classList.toggle('selected',selected.has(idx));
+  // update just this card's class — no re-render needed
+  const el = document.querySelectorAll('#handWrap .card')[idx];
+  if (el) el.classList.toggle('selected', selected.has(idx));
   updateActionBar();
 }
 
 // ── Render ─────────────────────────────────────────────────────────
-function renderHand() {
-  document.getElementById('handWrap').innerHTML = myHand.map((c,i) => cardHTML(c,i,true)).join('');
-  // reapply selected classes so visual state matches the selected set
-  const cards = document.querySelectorAll('#handWrap .card');
-  selected.forEach(idx => { if (cards[idx]) cards[idx].classList.add('selected'); });
+let _renderedHandSize = -1; // track last rendered hand size
+
+function renderHand(force=false) {
+  const wrap = document.getElementById('handWrap');
+  const needsRebuild = force || myHand.length !== _renderedHandSize;
+
+  if (needsRebuild) {
+    // full rebuild — only on deal or after playing cards
+    // strip deal-anim so it only fires on a genuine new deal
+    const isNewDeal = _renderedHandSize === -1 || myHand.length === 13;
+    wrap.innerHTML = myHand.map((c, i) => {
+      const col   = RED_SUITS.has(c.suit) ? 'red' : 'black';
+      const click = `onclick="toggleCard(${i})"`;
+      const anim  = isNewDeal ? ' deal-anim' : '';
+      const delay = isNewDeal ? `animation-delay:${i*0.04}s` : '';
+      return `<div class="card ${col}${anim}" ${click} style="${delay}">
+        <div class="card-rank">${c.rank}</div>
+        <div class="card-suit">${c.suit}</div>
+        <div class="card-cs">${c.suit}</div>
+        <div class="card-bot">
+          <div class="card-rank">${c.rank}</div>
+          <div class="card-suit">${c.suit}</div>
+        </div>
+      </div>`;
+    }).join('');
+    _renderedHandSize = myHand.length;
+  }
+
+  // always sync selected classes from the set — single source of truth
+  const cards = wrap.querySelectorAll('.card');
+  cards.forEach((el, i) => el.classList.toggle('selected', selected.has(i)));
+
   document.getElementById('myCount').textContent = `${myHand.length} card${myHand.length!==1?'s':''}`;
 }
 function renderOpp() {
@@ -766,7 +794,9 @@ function handleMessage(msg) {
       break;
 
     case 'started':
-      selected.clear(); document.getElementById('activityLog').innerHTML='';
+      selected.clear();
+      _renderedHandSize = -1;
+      document.getElementById('activityLog').innerHTML='';
       document.getElementById('winOverlay').classList.remove('show');
       showScreen('gameScreen'); fullRender(); break;
 
