@@ -159,7 +159,6 @@
   .hud-score span { color:var(--cream-t); }
   .hud-score .hud-score-div { color:var(--dim-t); font-size:14px; }
   .hud-score span.leading { color:var(--green-l); }
-  .hud-room { font-size:10px; color:var(--dim-t); letter-spacing:0.2em; }
   .turn-indicator { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; padding:6px 14px; border-radius:100px; }
   .turn-indicator.mine { background:rgba(74,158,92,0.18); color:var(--green-l); border:1px solid rgba(74,158,92,0.4); animation:turnPulse 2s ease-in-out infinite; }
   .turn-indicator.theirs { background:rgba(255,255,255,0.04); color:var(--dim-t); border:1px solid rgba(255,255,255,0.08); }
@@ -211,16 +210,8 @@
   /* centre */
   .center-area { grid-area:center; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; }
 
-  .pile-label { font-size:9px; letter-spacing:0.25em; text-transform:uppercase; color:var(--dim-t); }
   .pile-cards { display:flex; align-items:center; min-height:var(--card-h); }
-  .pile-by { font-size:9px; color:var(--dim-t); letter-spacing:0.08em; }
   .pile-type { font-size:8px; color:var(--green-l); letter-spacing:0.2em; text-transform:uppercase; }
-
-  .lead-badge {
-    font-size:11px; color:rgba(240,232,216,0.4); letter-spacing:0.15em; text-transform:uppercase;
-    padding:8px 22px; border:1px solid rgba(74,158,92,0.18); border-radius:100px;
-    background:rgba(74,158,92,0.05);
-  }
 
   /* activity log */
   #activityLog { margin-top:6px; pointer-events:none; min-height:26px; }
@@ -469,7 +460,7 @@
     <button class="btn-primary" id="joinBtn" onclick="joinGame()">enter the room →</button>
     <p class="error-msg" id="lobbyError"></p>
   </div>
-  <p class="lobby-sleepy">🌙 first visit of the day? the server might be having a lil nap -<br>give it a moment to wake up ☁️</p>
+  <p class="lobby-sleepy">🌙 first visit of the day? the server might be having a little nap —<br>give it a moment to wake up ☁️</p>
 </div>
 
 <!-- ══ WAITING ══════════════════════════════════════════ -->
@@ -520,7 +511,6 @@
       <div class="opp-fan" id="oppFan"></div>
     </div>
     <div class="center-area">
-      <div id="pileEmpty" class="lead-badge"></div>
       <div id="pileArea" style="display:none;flex-direction:column;align-items:center;gap:4px;">
         <div class="pile-cards" id="pileCards"></div>
         <div class="pile-type" id="pileType"></div>
@@ -773,12 +763,12 @@ function copyCode() { navigator.clipboard?.writeText(roomCode).then(()=>toast('r
 function isMyTurn() { return gameState&&gameState.currentTurn===myIdx; }
 
 // ── Card HTML ──────────────────────────────────────────────────────
-function cardHTML(card, idx, inHand=false) {
+function cardHTML(card, idx, inHand=false, isNewDeal=false) {
   const col   = RED_SUITS.has(card.suit) ? 'red' : 'black';
   const sel   = inHand && selected.has(idx) ? ' selected' : '';
   const click = inHand ? `onclick="toggleCard(${idx})"` : '';
-  const anim  = inHand ? ' deal-anim' : '';
-  const delay = inHand ? `animation-delay:${idx*0.04}s` : '';
+  const anim  = inHand && isNewDeal ? ' deal-anim' : '';
+  const delay = inHand && isNewDeal ? `animation-delay:${idx*0.04}s` : '';
   return `<div class="card ${col}${sel}${anim}" ${click} style="${delay}">
     <div class="card-rank">${card.rank}</div>
     <div class="card-suit">${card.suit}</div>
@@ -816,28 +806,13 @@ function renderHand(force=false) {
   const needsRebuild = force || myHand.length !== _renderedHandSize;
 
   if (needsRebuild) {
-    // full rebuild — only on deal or after playing cards
-    // strip deal-anim so it only fires on a genuine new deal
     const isNewDeal = _renderedHandSize === -1 || myHand.length === 13;
-    wrap.innerHTML = myHand.map((c, i) => {
-      const col   = RED_SUITS.has(c.suit) ? 'red' : 'black';
-      const click = `onclick="toggleCard(${i})"`;
-      const anim  = isNewDeal ? ' deal-anim' : '';
-      const delay = isNewDeal ? `animation-delay:${i*0.04}s` : '';
-      return `<div class="card ${col}${anim}" ${click} style="${delay}">
-        <div class="card-rank">${c.rank}</div>
-        <div class="card-suit">${c.suit}</div>
-        <div class="card-cs">${c.suit}</div>
-        <div class="card-bot">
-          <div class="card-rank">${c.rank}</div>
-          <div class="card-suit">${c.suit}</div>
-        </div>
-      </div>`;
-    }).join('');
+    // temporarily set inHand anim flag via a param override for new deals
+    wrap.innerHTML = myHand.map((c, i) => cardHTML(c, i, true, isNewDeal)).join('');
     _renderedHandSize = myHand.length;
   }
 
-  // always sync selected classes from the set — single source of truth
+  // always sync selected classes — single source of truth
   const cards = wrap.querySelectorAll('.card');
   cards.forEach((el, i) => el.classList.toggle('selected', selected.has(i)));
 
@@ -856,14 +831,11 @@ function renderPile() {
   if (!gameState) return;
   const pile = gameState.currentPlay;
   if (!pile || pile.length === 0) {
-    document.getElementById('pileEmpty').textContent = isMyTurn() ? '— your lead —' : `— ${gameState.oppName||'their'} lead —`;
-    document.getElementById('pileEmpty').style.display = 'flex';
-    document.getElementById('pileArea').style.display  = 'none';
+    document.getElementById('pileArea').style.display = 'none';
   } else {
-    document.getElementById('pileEmpty').style.display = 'none';
-    document.getElementById('pileArea').style.display  = 'flex';
-    document.getElementById('pileCards').innerHTML=pile.map(c=>`<div class="pile-card">${cardHTML(c)}</div>`).join('');
-    document.getElementById('pileType').textContent=PT_LABELS[gameState.lastPlayType||'']||'';
+    document.getElementById('pileArea').style.display = 'flex';
+    document.getElementById('pileCards').innerHTML = pile.map(c=>`<div class="pile-card">${cardHTML(c)}</div>`).join('');
+    document.getElementById('pileType').textContent = PT_LABELS[gameState.lastPlayType||'']||'';
   }
 }
 function renderTurnBadge() {
