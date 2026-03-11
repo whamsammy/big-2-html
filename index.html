@@ -290,8 +290,7 @@
   .card-suit { font-size:13px; line-height:1; position:relative; z-index:6; margin-top:1px; }
   .card-cs {
     position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-    font-size:52px; opacity:0.07; pointer-events:none; z-index:1;
-    filter:blur(0.3px);
+    font-size:52px; opacity:0.18; pointer-events:none; z-index:1;
   }
   .card-bot { position:absolute; bottom:4px; right:5px; transform:rotate(180deg); display:flex; flex-direction:column; align-items:flex-start; z-index:6; }
 
@@ -321,7 +320,28 @@
   .btn-play.ready:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(74,158,92,0.5); }
   .btn-play:disabled { cursor:default; }
 
-  /* ── Chat ── */
+  /* ── Your turn pill ── */
+  .your-turn-pill {
+    display:none; align-items:center; justify-content:center;
+    background:var(--red); color:#fff;
+    font-size:10px; letter-spacing:0.2em; text-transform:uppercase;
+    padding:5px 16px; border-radius:100px;
+    box-shadow:0 0 16px rgba(217,64,64,0.5);
+    animation:pillPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  .your-turn-pill.show { display:flex; }
+  @keyframes pillPop { from{opacity:0;transform:scale(0.7)} to{opacity:1;transform:scale(1)} }
+
+  /* ── Hand glow on your turn ── */
+  .hand-wrap.my-turn {
+    filter:drop-shadow(0 0 12px rgba(74,158,92,0.35));
+    animation:handPulse 2.5s ease-in-out infinite;
+  }
+  @keyframes handPulse { 0%,100%{filter:drop-shadow(0 0 8px rgba(74,158,92,0.25))} 50%{filter:drop-shadow(0 0 18px rgba(74,158,92,0.5))} }
+
+  /* ── Action bar brightens on your turn ── */
+  .action-bar { transition:background 0.3s; }
+  .action-bar.my-turn { background:rgba(20,35,21,0.95); }
   .chat-toggle {
     position:relative; background:transparent; border:1px solid rgba(74,158,92,0.25);
     border-radius:8px; color:var(--dim-t); font-size:14px;
@@ -500,14 +520,13 @@
       <div class="opp-fan" id="oppFan"></div>
     </div>
     <div class="center-area">
-      <div id="pileEmpty" class="lead-badge">— new round — play anything —</div>
+      <div id="pileEmpty" class="lead-badge">— your lead —</div>
       <div id="pileArea" style="display:none;flex-direction:column;align-items:center;gap:4px;">
-        <div class="pile-label">last play</div>
         <div class="pile-cards" id="pileCards"></div>
         <div class="pile-type" id="pileType"></div>
-        <div class="pile-by" id="pileBy"></div>
       </div>
       <div id="activityLog"></div>
+      <div class="your-turn-pill" id="yourTurnPill">your turn</div>
     </div>
     <div class="me-zone">
       <div class="me-info">
@@ -844,13 +863,28 @@ function renderPile() {
     document.getElementById('pileArea').style.display='flex';
     document.getElementById('pileCards').innerHTML=pile.map(c=>`<div class="pile-card">${cardHTML(c)}</div>`).join('');
     document.getElementById('pileType').textContent=PT_LABELS[gameState.lastPlayType||'']||'';
-    document.getElementById('pileBy').textContent=`played by ${gameState.currentPlayBy===myIdx?'you':(gameState.oppName||'opponent')}`;
   }
 }
 function renderTurnBadge() {
-  const b=document.getElementById('turnBadge');
-  if (isMyTurn()) { b.textContent='your turn'; b.className='turn-indicator mine'; }
-  else { b.textContent=`${gameState?.oppName||'their'} turn`; b.className='turn-indicator theirs'; }
+  const mine  = isMyTurn();
+  const b     = document.getElementById('turnBadge');
+  const pill  = document.getElementById('yourTurnPill');
+  const hand  = document.getElementById('handWrap');
+  const bar   = document.querySelector('.action-bar');
+
+  if (mine) {
+    b.textContent = 'your turn';
+    b.className   = 'turn-indicator mine';
+    pill.classList.add('show');
+    hand.classList.add('my-turn');
+    bar.classList.add('my-turn');
+  } else {
+    b.textContent = `${gameState?.oppName||'their'} turn`;
+    b.className   = 'turn-indicator theirs';
+    pill.classList.remove('show');
+    hand.classList.remove('my-turn');
+    bar.classList.remove('my-turn');
+  }
 }
 function updateActionBar() {
   const myTurn=isMyTurn(), hasPlay=gameState?.currentPlay, selArr=[...selected], ready=myTurn&&selArr.length>0;
