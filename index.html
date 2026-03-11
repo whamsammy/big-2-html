@@ -769,7 +769,6 @@ function handleMessage(msg) {
     case 'joined':
       myIdx=msg.playerIdx; roomCode=msg.code;
       document.getElementById('displayCode').textContent=msg.code;
-      document.getElementById('hudRoom').textContent=`room · ${msg.code}`;
       document.getElementById('slot0name').textContent=msg.name;
       document.querySelector('#slot0 .slot-avatar').textContent=chosenEmoji;
       showScreen('waitingScreen'); break;
