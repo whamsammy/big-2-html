@@ -55,7 +55,17 @@
   .lobby-eyebrow { font-size:10px; letter-spacing:0.35em; color:var(--green); text-transform:uppercase; margin-bottom:12px; }
   h1.lobby-title { font-family:'Playfair Display',serif; font-size:clamp(52px,10vw,88px); font-weight:700; line-height:0.9; color:var(--ink); text-align:center; margin-bottom:16px; }
   h1.lobby-title em { font-style:italic; color:var(--green); font-size:1.35em; line-height:0.7; }
-  .lobby-chinese { font-size:13px; letter-spacing:0.5em; color:var(--mid); margin-bottom:40px; text-align:center; display:block; }
+  .lobby-chinese { font-size:13px; letter-spacing:0.5em; color:var(--mid); margin-bottom:16px; text-align:center; display:block; }
+
+  .lobby-players {
+    font-size:10px; letter-spacing:0.22em; color:var(--mid); text-align:center;
+    margin-bottom:28px; opacity:0.7;
+  }
+
+  .lobby-sleepy {
+    margin-top:20px; font-size:10px; color:var(--mid); text-align:center;
+    letter-spacing:0.04em; line-height:1.7; opacity:0.65; max-width:340px;
+  }
 
   .lobby-card {
     background:rgba(255,253,248,0.92); border:1px solid rgba(74,158,92,0.15);
@@ -84,7 +94,7 @@
   .error-msg { font-size:11px; color:#c0392b; letter-spacing:0.05em; margin-top:12px; text-align:center; min-height:18px; }
 
   .emoji-picker-label { font-size:9px; letter-spacing:0.2em; color:var(--green); text-transform:uppercase; margin-bottom:8px; display:block; }
-  .emoji-grid { display:grid; grid-template-columns:repeat(6,40px); gap:8px; margin-bottom:20px; }
+  .emoji-grid { display:flex; justify-content:center; gap:8px; margin-bottom:20px; }
   .emoji-opt {
     width:40px; height:40px; border-radius:10px; font-size:20px;
     background:rgba(235,228,216,0.7); border:1.5px solid rgba(74,158,92,0.15);
@@ -355,6 +365,7 @@
   <p class="lobby-eyebrow">✦ the card room ✦</p>
   <h1 class="lobby-title">Big <em>2</em></h1>
   <span class="lobby-chinese">大　二　·　鋤　大　弟</span>
+  <p class="lobby-players">♠ ♥ &nbsp; for two players &nbsp; ♦ ♣</p>
   <div class="lobby-card">
     <label class="field-label">your name</label>
     <input class="field-input" id="nameInput" type="text" placeholder="enter your name" maxlength="16" autocomplete="off">
@@ -365,6 +376,7 @@
     <button class="btn-primary" id="joinBtn" onclick="joinGame()">enter the room →</button>
     <p class="error-msg" id="lobbyError"></p>
   </div>
+  <p class="lobby-sleepy">🌙 first visit of the day? the server might be having a lil nap -<br>give it a moment to wake up ☁️</p>
 </div>
 
 <!-- ══ WAITING ══════════════════════════════════════════ -->
@@ -455,7 +467,7 @@ const WS_URL = window.location.hostname === 'localhost'
   : 'wss://big-2-g1r4.onrender.com';
 
 // ── Emoji picker ───────────────────────────────────────────────────
-const EMOJI_OPTIONS = ['🌸','🌙','🔥','🌊','⚡','🌿','🦋','🎴','🍀','🐉','🌺','☁️'];
+const EMOJI_OPTIONS = ['🌸','🌙','🔥','🌊','⚡','🌿','🪷'];
 let chosenEmoji = EMOJI_OPTIONS[0];
 
 function initEmojiPicker() {
