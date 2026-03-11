@@ -331,20 +331,19 @@
 
   /* ── Activity log ── */
   #activityLog {
-    position:absolute; left:50%; top:50%;
-    transform:translate(12px, -50%);
-    margin-left: calc(var(--card-w) * 3);
-    width:148px; z-index:50;
+    margin-top:8px;
     pointer-events:none;
+    min-height:32px;
   }
   .log-entry {
     background:rgba(255,252,246,0.92);
     border:1px solid rgba(58,125,68,0.2);
-    border-radius:10px; padding:8px 12px;
+    border-radius:10px; padding:7px 14px;
     font-size:10px; color:var(--ink-l); line-height:1.5;
     box-shadow:0 2px 8px rgba(44,36,22,0.08);
     backdrop-filter:blur(6px);
     animation:fadeIn 0.25s ease both;
+    text-align:center;
   }
   .log-entry .log-name { color:var(--gold); font-weight:500; }
   .log-entry .log-action { color:var(--mid); }
@@ -714,8 +713,9 @@ function updateActionBar() {
     document.getElementById('actionHint').textContent = `waiting for ${gameState?.oppName || 'opponent'}...`;
   } else if (!hasPlay) {
     document.getElementById('actionHint').textContent = 'your lead — play any valid combination';
-    if (gameState?.firstTurn) {
-      document.getElementById('actionHint').textContent = 'first play must include 3♦';
+    if (gameState?.firstTurn && gameState?.lowestCard) {
+      const lc = gameState.lowestCard;
+      document.getElementById('actionHint').textContent = `first play must include ${lc.rank}${lc.suit}`;
     }
   } else {
     document.getElementById('actionHint').textContent =
@@ -852,7 +852,6 @@ function handleMessage(msg) {
         const byName = msg.by === myIdx ? 'you' : msg.byName;
         const desc = describePlay(msg.cards, msg.playType);
         addLog(`<span class="log-name">${byName}</span> <span class="log-action">played ${desc}</span>`);
-        if (msg.by !== myIdx) toast(`${msg.byName} played ${msg.cards.map(c=>c.rank+c.suit).join(' ')}`);
       }
       break;
 
@@ -861,7 +860,6 @@ function handleMessage(msg) {
       {
         const byName = msg.by === myIdx ? 'you' : msg.byName;
         addLog(`<span class="log-name">${byName}</span> <span class="log-action">passed</span>`);
-        if (msg.by !== myIdx) toast(`${msg.byName} passed`);
       }
       break;
 
