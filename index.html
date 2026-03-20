@@ -931,10 +931,14 @@ function renderOpp() {
   document.getElementById('oppName').textContent=gameState.oppName||'opponent';
   document.getElementById('oppCount').textContent=`${gameState.oppCardCount} card${gameState.oppCardCount!==1?'s':''}`;
 
+  console.log('[renderOpp] gameOver:', gameState.gameOver, '| loserHand:', gameState.loserHand);
+
   const fan = document.getElementById('oppFan');
-  if (gameState.gameOver && gameState.oppHand && gameState.oppHand.length > 0) {
-    // reveal the loser's hand face-up
-    const cards = gameState.oppHand.map((c, i) => {
+  if (gameState.gameOver && gameState.loserHand && gameState.loserHand.length > 0) {
+    // reveal the loser's hand face-up (shown to both players)
+    const isLoser = gameState.winner !== myIdx;
+    const label = isLoser ? 'your remaining cards' : 'their hand';
+    const cards = gameState.loserHand.map((c, i) => {
       const col = RED_SUITS.has(c.suit) ? 'red' : 'black';
       const delay = `animation-delay:${i * 0.05}s`;
       return `<div class="card ${col}" style="${delay}">
@@ -945,7 +949,7 @@ function renderOpp() {
       </div>`;
     }).join('');
     fan.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-      <div class="opp-reveal-label">their hand</div>
+      <div class="opp-reveal-label">${label}</div>
       <div class="opp-reveal">${cards}</div>
     </div>`;
   } else {
