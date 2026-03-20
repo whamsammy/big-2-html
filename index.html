@@ -185,7 +185,7 @@
   .p-badge { font-size:8px; letter-spacing:0.12em; text-transform:uppercase; color:var(--dim-t); padding:2px 8px; border-radius:100px; border:1px solid rgba(255,255,255,0.1); margin-left:4px; }
   .p-badge.passed { color:#e07878; border-color:rgba(224,120,120,0.3); }
 
-  .opp-fan { display:flex; position:relative; height:58px; width:100%; max-width:320px; justify-content:center; }
+  .opp-fan { display:flex; position:relative; min-height:58px; width:100%; max-width:380px; justify-content:center; }
   .face-down {
     width:40px; height:58px; border-radius:7px;
     background:
@@ -1113,6 +1113,7 @@ function handleMessage(msg) {
         document.getElementById('handWrap').classList.remove('my-turn');
         document.querySelector('.action-bar').classList.remove('my-turn');
         updateScoreBoard(iWon);
+        renderOpp();
         if (iWon) { SFX.win(); setTimeout(() => launchConfetti(), 1400); }
         setTimeout(() => { document.getElementById('winOverlay').classList.add('show'); }, 2200);
       } break;
