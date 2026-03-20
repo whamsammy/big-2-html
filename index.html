@@ -661,44 +661,32 @@ function playTone(opts) {
     osc.stop(ctx.currentTime + (opts.duration || 0.15) + 0.05);
   } catch(e) {}
 }
-function playNoise(dur=0.06, gain=0.08) {
-  try {
-    const ctx = ac();
-    const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-    const src = ctx.createBufferSource();
-    const env = ctx.createGain();
-    const filt = ctx.createBiquadFilter();
-    filt.type = 'bandpass'; filt.frequency.value = 1200; filt.Q.value = 0.8;
-    src.buffer = buf; src.connect(filt); filt.connect(env); env.connect(ctx.destination);
-    env.gain.setValueAtTime(gain, ctx.currentTime);
-    env.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
-    src.start(); src.stop(ctx.currentTime + dur + 0.02);
-  } catch(e) {}
-}
-
 const SFX = {
-  // soft click when selecting a card
-  select() { playTone({ type:'sine', freq:520, freq2:480, gain:0.1, attack:0.005, decay:0.08, duration:0.08 }); },
-  // deselect — slightly lower
-  deselect() { playTone({ type:'sine', freq:420, freq2:390, gain:0.08, attack:0.005, decay:0.07, duration:0.07 }); },
-  // card thud when you play
-  play() {
-    playNoise(0.08, 0.12);
-    setTimeout(() => playTone({ type:'sine', freq:200, freq2:140, gain:0.14, attack:0.005, decay:0.12, duration:0.12 }), 20);
+  // soft marimba tap on select
+  select() {
+    playTone({ type:'sine', freq:880, gain:0.13, attack:0.004, decay:0.12, duration:0.12 });
+    setTimeout(() => playTone({ type:'sine', freq:1108, gain:0.06, attack:0.004, decay:0.09, duration:0.09 }), 18);
   },
-  // opponent plays — slightly different thud so you can tell
+  // lower tap on deselect
+  deselect() {
+    playTone({ type:'sine', freq:698, gain:0.1, attack:0.004, decay:0.1, duration:0.1 });
+  },
+  // soft swoosh when you play
+  play() {
+    playTone({ type:'sine', freq:660, freq2:440, gain:0.15, attack:0.008, decay:0.18, duration:0.18 });
+    setTimeout(() => playTone({ type:'sine', freq:440, freq2:330, gain:0.08, attack:0.005, decay:0.14, duration:0.14 }), 60);
+  },
+  // opponent plays — softer swoosh
   oppPlay() {
-    playNoise(0.07, 0.09);
-    setTimeout(() => playTone({ type:'sine', freq:180, freq2:130, gain:0.12, attack:0.005, decay:0.1, duration:0.1 }), 15);
+    playTone({ type:'sine', freq:600, freq2:400, gain:0.12, attack:0.008, decay:0.16, duration:0.16 });
+    setTimeout(() => playTone({ type:'sine', freq:400, freq2:300, gain:0.06, attack:0.005, decay:0.12, duration:0.12 }), 60);
   },
   // pass — airy whoosh
   pass() { playTone({ type:'sine', freq:340, freq2:280, gain:0.07, attack:0.01, decay:0.18, duration:0.18 }); },
-  // card deal at game start — rapid soft ticks
+  // deal — soft sine pops
   deal() {
     for (let i = 0; i < 13; i++) {
-      setTimeout(() => playNoise(0.04, 0.07), i * 55);
+      setTimeout(() => playTone({ type:'sine', freq:700 + Math.random()*200, gain:0.07, attack:0.003, decay:0.06, duration:0.06 }), i * 55);
     }
   },
   // chat ping — gentle bell
@@ -706,13 +694,12 @@ const SFX = {
     playTone({ type:'sine', freq:880, gain:0.12, attack:0.005, decay:0.35, duration:0.35 });
     setTimeout(() => playTone({ type:'sine', freq:1100, gain:0.06, attack:0.005, decay:0.25, duration:0.25 }), 80);
   },
-  // win chime — cute ascending sparkle ✨
+  // win chime — cute ascending sparkle
   win() {
     const notes = [523, 659, 784, 1047, 1319];
     notes.forEach((freq, i) => {
       setTimeout(() => {
         playTone({ type:'sine', freq, gain:0.18, attack:0.01, decay:0.4, duration:0.4 });
-        // add a tiny octave harmony for sparkle
         setTimeout(() => playTone({ type:'sine', freq:freq*2, gain:0.06, attack:0.01, decay:0.3, duration:0.3 }), 30);
       }, i * 110);
     });
