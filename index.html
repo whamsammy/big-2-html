@@ -347,7 +347,7 @@
   }
 
   .chat-drawer {
-    position:absolute; top:33%; left:12px; height:40%; width:240px;
+    position:absolute; top:28%; left:12px; height:48%; width:240px;
     background:rgba(14,22,15,0.97); border:1px solid rgba(74,158,92,0.2);
     border-radius:16px; backdrop-filter:blur(16px); z-index:50;
     display:flex; flex-direction:column; overflow:hidden;
@@ -373,6 +373,7 @@
   .chat-msg-meta { display:flex; align-items:baseline; gap:6px; }
   .chat-msg-name { font-size:9px; color:var(--green-l); letter-spacing:0.1em; text-transform:uppercase; }
   .chat-msg-name.me { color:rgba(240,232,216,0.5); }
+  .chat-msg-emoji { font-size:12px; line-height:1; }
   .chat-msg-time { font-size:8px; color:var(--dim-t); }
   .chat-msg-text { font-size:12px; color:var(--cream-t); line-height:1.45; word-break:break-word; }
 
@@ -449,7 +450,6 @@
     .lobby-card { padding:28px 22px; }
   }
 </style>
-<script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 
@@ -745,12 +745,13 @@ function formatTime() {
   return now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
 }
 
-function appendChatMsg(name, text, isMe) {
+function appendChatMsg(name, emoji, text, isMe) {
   const el = document.getElementById('chatMessages');
   const div = document.createElement('div');
   div.className = 'chat-msg';
   div.innerHTML = `
     <div class="chat-msg-meta">
+      <span class="chat-msg-emoji">${emoji}</span>
       <span class="chat-msg-name${isMe?' me':''}">${name}</span>
       <span class="chat-msg-time">${formatTime()}</span>
     </div>
@@ -1097,8 +1098,9 @@ function handleMessage(msg) {
 
     case 'chat':
       { const isMe = msg.from === myIdx;
-        const name = isMe ? (myName||'you') : (gameState?.oppName||'opponent');
-        appendChatMsg(name, msg.text, isMe);
+        const name  = isMe ? (myName||'you') : (gameState?.oppName||'opponent');
+        const emoji = isMe ? chosenEmoji : (gameState?.oppEmoji||'');
+        appendChatMsg(name, emoji, msg.text, isMe);
         if (!isMe) {
           SFX.chat();
           if (!chatOpen) {
