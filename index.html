@@ -347,11 +347,12 @@
   }
 
   .chat-drawer {
-    position:absolute; top:0; left:0; bottom:0; width:260px;
-    background:rgba(14,22,15,0.97); border-right:1px solid rgba(74,158,92,0.2);
-    backdrop-filter:blur(16px); z-index:50;
-    display:flex; flex-direction:column;
-    transform:translateX(-100%); transition:transform 0.28s ease;
+    position:absolute; top:33%; left:12px; height:40%; width:240px;
+    background:rgba(14,22,15,0.97); border:1px solid rgba(74,158,92,0.2);
+    border-radius:16px; backdrop-filter:blur(16px); z-index:50;
+    display:flex; flex-direction:column; overflow:hidden;
+    transform:translateX(calc(-100% - 12px)); transition:transform 0.28s ease;
+    box-shadow:0 8px 32px rgba(0,0,0,0.5);
   }
   .chat-drawer.open { transform:translateX(0); }
 
@@ -487,19 +488,19 @@
 <!-- ══ GAME ══════════════════════════════════════════════ -->
 <div id="gameScreen" class="screen">
   <div class="hud">
-    <div class="hud-logo">Big 2</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="hud-logo">Big 2</div>
+      <button class="chat-toggle" id="chatToggle" onclick="toggleChat()" title="chat">
+        ✉
+        <span class="chat-badge" id="chatBadge" style="display:none"></span>
+      </button>
+    </div>
     <div class="hud-score" id="hudScore" style="display:none">
       <span id="hudScoreMe">0</span>
       <span class="hud-score-div">·</span>
       <span id="hudScoreOpp">0</span>
     </div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <button class="chat-toggle" id="chatToggle" onclick="toggleChat()" title="chat">
-        ✉
-        <span class="chat-badge" id="chatBadge" style="display:none"></span>
-      </button>
-      <div class="turn-indicator theirs" id="turnBadge">waiting</div>
-    </div>
+    <div class="turn-indicator theirs" id="turnBadge">waiting</div>
   </div>
   <div class="table-wrap">
     <div class="opp-zone">
@@ -585,7 +586,13 @@ const WS_URL = window.location.hostname === 'localhost'
   : 'wss://big-2-g1r4.onrender.com';
 
 // ── Emoji picker ───────────────────────────────────────────────────
-const EMOJI_OPTIONS = ['🌸','🌙','🔥','🌊','⚡','🌿','🐀'];
+const EMOJI_FIXED = ['❤️','🐀'];
+const EMOJI_POOL  = ['🌸','🌙','🔥','🌊','⚡','🌿','🪷','🎴','🍀','🦋','🌺','🎲','🍉','🌈','🦊','🐉','🍄','🌻','🎯','⭐','🫧','🪸','🦄','🍒','🐼','🌴','🎪','🦚','🍓','🌶️','🐬','🦁','🌮','🎸','🍜','🦀','🐧','🌝','🍋','🎭','🦩','🐙','🌵','🎠','🍇','🦜','🐝','🌾','🎡','🍑','🦢','🐻','🌏','🎰','🍕','🐯','🌋','🍦','🦌','🐸','🌃','🎨','🍭','🦝','🐳','🌠','🎬','🍰','🦔','🐺','🗿','🫐'];
+function pickEmojis() {
+  const shuffled = [...EMOJI_POOL].sort(() => Math.random() - 0.5);
+  return [...EMOJI_FIXED, ...shuffled.slice(0, 5)];
+}
+const EMOJI_OPTIONS = pickEmojis();
 let chosenEmoji = EMOJI_OPTIONS[0];
 
 function initEmojiPicker() {
